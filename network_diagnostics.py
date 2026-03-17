@@ -13,7 +13,6 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox, scrolledtext, ttk
 
-
 # Colours
 BG        = "#0d1117"
 BG2       = "#161b22"
@@ -516,7 +515,7 @@ class NetworkTool(tk.Tk):
                          "Select-Object -ExpandProperty ServerAddresses"],
                         capture_output=True, text=True, timeout=6
                     )
-                    dns = [l.strip() for l in r.stdout.splitlines() if l.strip()]
+                    dns = [line.strip() for line in r.stdout.splitlines() if line.strip()]
                     if dns:
                         self._write("  DNS Servers:  ", "label")
                         self._writeln(", ".join(dns[:4]), "ok")
