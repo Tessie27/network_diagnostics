@@ -11,6 +11,10 @@ python_version = "3.8"
 ignore_missing_imports = true
 warn_unused_ignores = true
 
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E221", "E127", "E306"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v"

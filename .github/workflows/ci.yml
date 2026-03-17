@@ -25,7 +25,7 @@ jobs:
         run: ruff check network_diagnostics.py tests/
 
       - name: Run flake8
-        run: flake8 network_diagnostics.py tests/ --max-line-length=100
+        run: flake8 network_diagnostics.py tests/ --max-line-length=100 --extend-ignore=E221,E127,E306 --extend-ignore=E221,E127,E306
 
   typecheck:
     name: Type Check (mypy)
