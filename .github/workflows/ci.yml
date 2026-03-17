@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  lint:
+    name: Lint (ruff + flake8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install linters
+        run: pip install ruff flake8
+
+      - name: Run ruff
+        run: ruff check network_diagnostics.py tests/
+
+      - name: Run flake8
+        run: flake8 network_diagnostics.py tests/ --max-line-length=100
+
+  typecheck:
+    name: Type Check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install mypy
+        run: pip install mypy
+
+      - name: Run mypy
+        run: mypy network_diagnostics.py --ignore-missing-imports --exclude tests/
+
+  test:
+    name: Unit Tests (pytest) – ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.8", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Linux: install a virtual display so tkinter can be stubbed without an X server
+      - name: Install virtual display (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y python3-tk xvfb
+
+      - name: Install pytest
+        run: pip install pytest pytest-cov
+
+      - name: Run tests (Linux)
+        if: runner.os == 'Linux'
+        env:
+          DISPLAY: ":99"
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          pytest tests/ -v --cov=network_diagnostics --cov-report=term-missing
+
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        run: pytest tests/ -v --cov=network_diagnostics --cov-report=term-missing
+
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: .coverage
+
+  build:
+    name: Build Check (pyinstaller)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build executable
+        run: pyinstaller --onefile --windowed --name NetworkDiagnostics network_diagnostics.py
+
+      - name: Verify executable exists
+        run: Test-Path dist/NetworkDiagnostics.exe
+        shell: pwsh
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NetworkDiagnostics-windows
+          path: dist/NetworkDiagnostics.exe
