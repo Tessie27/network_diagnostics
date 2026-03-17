@@ -4,14 +4,14 @@ Author: Tezz
 Requires: Python 3.8+ standard library only (no pip)
 """
 
-import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
-import subprocess
-import socket
-import threading
 import platform
 import re
+import socket
+import subprocess
+import threading
+import tkinter as tk
 from datetime import datetime
+from tkinter import messagebox, scrolledtext, ttk
 
 
 # Colours

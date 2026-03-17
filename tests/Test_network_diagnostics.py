@@ -4,18 +4,15 @@ Covers: utility functions, DNS logic, port logic, platform checks
 Uses: pytest + unittest.mock (stdlib only, no extra deps beyond pytest)
 """
 
-import socket
 import platform
+import re
+import socket
 import subprocess
-from unittest.mock import patch, MagicMock
-
-import pytest
-
-# Helpers – import the module without launching the Tk window
-
-import importlib
 import sys
 import types
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Stub out tkinter entirely so tests run headless on CI
 tk_stub = types.ModuleType("tkinter")
@@ -40,8 +37,10 @@ sys.modules.setdefault("tkinter.messagebox", messagebox_stub)
 
 import network_diagnostics as nd  # noqa: E402  (import after stubs)
 
-# ts() – timestamp helper
 
+# ---------------------------------------------------------------------------
+# ts() – timestamp helper
+# ---------------------------------------------------------------------------
 class TestTs:
     def test_format(self):
         result = nd.ts()
@@ -52,7 +51,10 @@ class TestTs:
     def test_returns_string(self):
         assert isinstance(nd.ts(), str)
 
+
+# ---------------------------------------------------------------------------
 # is_windows()
+# ---------------------------------------------------------------------------
 class TestIsWindows:
     def test_returns_bool(self):
         assert isinstance(nd.is_windows(), bool)
@@ -70,7 +72,9 @@ class TestIsWindows:
             assert nd.is_windows() is False
 
 
+# ---------------------------------------------------------------------------
 # DNS resolution logic (socket.getaddrinfo)
+# ---------------------------------------------------------------------------
 class TestDnsResolution:
     """Test the core DNS resolution used in _run_dns."""
 
@@ -90,7 +94,9 @@ class TestDnsResolution:
         assert "127.0.0.1" in ips or "::1" in ips
 
 
+# ---------------------------------------------------------------------------
 # Port check logic
+# ---------------------------------------------------------------------------
 class TestPortCheck:
     def test_open_port_detected(self):
         """connect_ex returns 0 for an open port (mocked)."""
@@ -127,7 +133,9 @@ class TestPortCheck:
             int("not_a_port")
 
 
+# ---------------------------------------------------------------------------
 # Ping command construction
+# ---------------------------------------------------------------------------
 class TestPingCommand:
     def test_windows_flag(self):
         with patch.object(nd, "is_windows", return_value=True):
@@ -150,7 +158,9 @@ class TestPingCommand:
             mock_run.assert_called_once()
 
 
+# ---------------------------------------------------------------------------
 # Subprocess / admin command helpers
+# ---------------------------------------------------------------------------
 class TestAdminCommandHelpers:
     def test_timeout_handled(self):
         with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("ping", 5)):
@@ -168,7 +178,9 @@ class TestAdminCommandHelpers:
                 subprocess.run(["netsh", "winsock", "reset"])
 
 
+# ---------------------------------------------------------------------------
 # Output tag keyword matching (replicated logic from the tool)
+# ---------------------------------------------------------------------------
 class TestOutputTagging:
     def _classify(self, line: str) -> str:
         line_l = line.lower()
@@ -191,9 +203,9 @@ class TestOutputTagging:
         assert self._classify("Operation OK") == "ok"
 
 
+# ---------------------------------------------------------------------------
 # Traceroute line classification (replicated regex logic)
-import re  # noqa: E402
-
+# ---------------------------------------------------------------------------
 class TestTracerouteClassification:
     def _classify(self, line: str) -> str:
         if any(k in line.lower() for k in ["tracing", "traceroute", "over a maximum"]):
