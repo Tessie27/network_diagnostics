@@ -73,12 +73,15 @@ jobs:
         if: runner.os == 'Linux'
         env:
           DISPLAY: ":99"
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           Xvfb :99 -screen 0 1024x768x24 &
           pytest tests/ -v --cov=network_diagnostics --cov-report=term-missing
 
       - name: Run tests (Windows)
         if: runner.os == 'Windows'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: pytest tests/ -v --cov=network_diagnostics --cov-report=term-missing
 
       - name: Upload coverage report
