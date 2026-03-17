@@ -8,7 +8,7 @@ A desktop network troubleshooting utility built with Python and tkinter. No thir
 
 ## Screenshot
 
-> screenshot.png
+> ![Network Diagnostics Tool](screenshot.png)
 
 ---
 
